@@ -9,12 +9,13 @@ id_out = '28-000003aa674d'
 id_ice = '28-0000052ba923'
 
 host = 'data.sparkfun.com'
-public_key = 'KJWMYw6EldfWmQxqzvjV'
-private_key = 'vzq10vXMxdHWXGnJ9rqp'
+public_key = 'xxxxxxxxxxxxxxxxxxxx'
+private_key = 'yyyyyyyyyyyyyyyyyyyy'
+delete_key = 'zzzzzzzzzzzzzzzzzzzz'
 
 failed_file = expanduser("~") + "/displaylogger_failed.txt"
 
-sleep_min = 15
+sleep_min = 30
 
 url_with_keys = "https://{}/input/{}?private_key={}&".format(host, public_key, private_key)
 

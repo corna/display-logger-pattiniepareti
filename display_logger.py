@@ -14,12 +14,12 @@ private_key = 'vzq10vXMxdHWXGnJ9rqp'
 
 failed_file = expanduser("~") + "/displaylogger_failed.txt"
 
-sleep_min = 30
+sleep_min = 15
 
 url_with_keys = "https://{}/input/{}?private_key={}&".format(host, public_key, private_key)
 
 def gettemp(id):
-  try:
+  try:  
     with open('/sys/bus/w1/devices/' + id + '/w1_slave', 'r') as file:
       line = file.readline()
       crc = line.rsplit(' ', 1)
@@ -34,11 +34,11 @@ def gettemp(id):
     return 85
 
 if __name__ == '__main__':
-
-  current_time = time.localtime()
-  time.sleep((3600 - current_time.tm_min * 60 - current_time.tm_sec) % (sleep_min * 60))
-
   while True:
+
+    current_time = time.localtime()
+    time.sleep((3600 - current_time.tm_min * 60 - current_time.tm_sec - 1) % (sleep_min * 60) + 1)
+
     requests = []
     success = 0
 
@@ -74,4 +74,3 @@ if __name__ == '__main__':
     else:
       if os.path.isfile(failed_file):
         os.remove(failed_file)
-

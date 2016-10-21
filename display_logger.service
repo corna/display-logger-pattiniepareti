@@ -1,0 +1,11 @@
+[Unit]
+Description=Log the display data to data.sparkfun.com
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -u /usr/local/bin/display_logger.py
+Restart=always
+User=display
+
+[Install]
+WantedBy=multi-user.target

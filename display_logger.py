@@ -84,5 +84,5 @@ if __name__ == '__main__':
                   "temp_out={}&temp_ice={}&humidity={}".format(str(gettemp(id_out)), str(gettemp(id_ice)), 0)
 
     send_data(pep_url, new_request, pep_failed_file)
-    send_data(phant_url, new_request, phant_failed_file)
+    #send_data(phant_url, new_request, phant_failed_file)
 

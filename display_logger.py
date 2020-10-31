@@ -3,6 +3,7 @@
 import time
 import urllib.request
 import os
+import schedule
 
 master_out = 'w1_bus_master1'
 master_ice = 'w1_bus_master2'
@@ -45,6 +46,12 @@ def gethum():
     except ValueError:
         return 0
 
+
+def set_heater(enable):
+    with open('/sys/bus/iio/devices/iio:device0/heater_enable', 'w') as f:
+        f.write("1" if enable else "0")
+
+
 def send_data(url, new_request, failed_file):
     requests = []
     success = 0
@@ -82,16 +89,26 @@ def send_data(url, new_request, failed_file):
             os.remove(failed_file)
 
 
+def measure_and_send():
+    id_out = getsensorpath(master_out)
+    id_ice = getsensorpath(master_ice)
+
+    new_request = time.strftime("year=%Y&month=%m&day=%d&hour=%H&minute=%M&") + \
+                                "temp_out={}&temp_ice={}&humidity={}".format(str(gettemp(id_out)), str(gettemp(id_ice)), gethum())
+
+    send_data(pep_url, new_request, pep_failed_file)
+
+
 if __name__ == '__main__':
+
+    schedule.every().hour.at(":20").do(lambda: set_heater(True))
+    schedule.every().hour.at(":29").do(lambda: set_heater(False))
+    schedule.every().hour.at(":30").do(measure_and_send)
+
+    schedule.every().hour.at(":50").do(lambda: set_heater(True))
+    schedule.every().hour.at(":59").do(lambda: set_heater(False))
+    schedule.every().hour.at(":00").do(measure_and_send)
+
     while True:
-
-        current_time = time.localtime()
-        time.sleep((3600 - current_time.tm_min * 60 - current_time.tm_sec - 1) % (sleep_min * 60) + 1)
-
-        id_out = getsensorpath(master_out)
-        id_ice = getsensorpath(master_ice)
-
-        new_request = time.strftime("year=%Y&month=%m&day=%d&hour=%H&minute=%M&") + \
-                                    "temp_out={}&temp_ice={}&humidity={}".format(str(gettemp(id_out)), str(gettemp(id_ice)), gethum())
-
-        send_data(pep_url, new_request, pep_failed_file)
+        schedule.run_pending()
+        time.sleep(1)

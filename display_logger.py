@@ -36,6 +36,15 @@ def gettemp(id):
         return 85
 
 
+def gethum():
+    with open('/sys/bus/iio/devices/iio:device0/in_humidityrelative_input', 'r') as f:
+        value_str = f.readline()
+
+    try:
+        return int(value_str) / 1000
+    except ValueError:
+        return 0
+
 def send_data(url, new_request, failed_file):
     requests = []
     success = 0
@@ -83,6 +92,6 @@ if __name__ == '__main__':
         id_ice = getsensorpath(master_ice)
 
         new_request = time.strftime("year=%Y&month=%m&day=%d&hour=%H&minute=%M&") + \
-                                    "temp_out={}&temp_ice={}&humidity={}".format(str(gettemp(id_out)), str(gettemp(id_ice)), 0)
+                                    "temp_out={}&temp_ice={}&humidity={}".format(str(gettemp(id_out)), str(gettemp(id_ice)), gethum())
 
         send_data(pep_url, new_request, pep_failed_file)

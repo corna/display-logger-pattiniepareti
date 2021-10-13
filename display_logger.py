@@ -38,12 +38,12 @@ def gettemp(id):
 
 
 def gethum():
-    with open('/sys/bus/iio/devices/iio:device0/in_humidityrelative_input', 'r') as f:
-        value_str = f.readline()
-
     try:
+        with open('/sys/bus/iio/devices/iio:device0/in_humidityrelative_input', 'r') as f:
+            value_str = f.readline()
+
         return int(value_str) / 1000
-    except ValueError:
+    except Exception:
         return 0
 
 

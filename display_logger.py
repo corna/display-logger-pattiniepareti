@@ -5,6 +5,7 @@ import urllib.request
 import os
 import schedule
 
+temp_retries = 3
 master_out = 'w1_bus_master1'
 master_ice = 'w1_bus_master2'
 
@@ -21,20 +22,21 @@ def getsensorpath(master):
 
 
 def gettemp(id):
-    try:
-        w1path = os.path.join('/sys/bus/w1/devices', id, 'w1_slave')
-        with open(w1path, 'r') as file:
-            line = file.readline()
-            crc = line.rsplit(' ', 1)
-            crc = crc[1].replace('\n', '')
-            if crc == 'YES':
+    for i in range(temp_retries):
+        try:
+            w1path = os.path.join('/sys/bus/w1/devices', id, 'w1_slave')
+            with open(w1path, 'r') as file:
                 line = file.readline()
-                return float(line.rsplit('t=', 1)[1]) / 1000
-            else:
-                return 85
+                crc = line.rsplit(' ', 1)
+                crc = crc[1].replace('\n', '')
+                if crc == 'YES':
+                    line = file.readline()
+                    return float(line.rsplit('t=', 1)[1]) / 1000
 
-    except Exception:
-        return 85
+        except Exception:
+            pass
+
+    return None
 
 
 def gethum():
@@ -92,11 +94,17 @@ def send_data(url, new_request, failed_file):
 def measure_and_send():
     id_out = getsensorpath(master_out)
     id_ice = getsensorpath(master_ice)
+    temp_out = gettemp(id_out)
+    temp_ice = gettemp(id_ice)
 
-    new_request = time.strftime("year=%Y&month=%m&day=%d&hour=%H&minute=%M&") + \
-                                "temp_out={}&temp_ice={}&humidity={}".format(str(gettemp(id_out)), str(gettemp(id_ice)), gethum())
+    if temp_out is not None and temp_ice is not None:
+        new_request = time.strftime("year=%Y&month=%m&day=%d&hour=%H&minute=%M&") + \
+                                    "temp_out={}&temp_ice={}&humidity={}".format(str(temp_out), str(temp_ice), gethum())
 
-    send_data(pep_url, new_request, pep_failed_file)
+        send_data(pep_url, new_request, pep_failed_file)
+
+    else:
+        print("Failed to get temperature data, skipping")
 
 
 if __name__ == '__main__':
